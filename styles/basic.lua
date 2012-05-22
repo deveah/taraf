@@ -5,7 +5,6 @@ style.author = "default package"
 
 style.defaultSpeed = 32
 style.defaultBPM = 140
--- TODO measure is ( how many eights fit in one measure )
 style.measure = 8
 
 style.chords = {}
@@ -31,7 +30,8 @@ style.bass[1] = {
 	-2, -2, 11, 13 }
 
 style.order = {
---		chords	bass	drums
+--		drums	chords	bass
+	{	1,		nil,	nil		},
 	{	1,		1,		1 		},
 	"repeat"
 }

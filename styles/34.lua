@@ -1,4 +1,3 @@
-
 style = {}
 style.name = "3/4 test"
 style.author = "default package"

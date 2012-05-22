@@ -290,13 +290,20 @@ int main( int argc, char* argv[] )
 
 	lua_setglobal( L, "args" );
 
-	r = luaL_loadfile( L, argv[1] );
-	/* quick and dirty debug hack */
-		printf( "ERR %i\n", r );
-		printf( "TYPE %i\n", lua_type( L, -1 ) );
+	/*r = luaL_loadfile( L, argv[1] );
+	if( r )
+		printf( "FILE ERROR: %i\n", r );
 	r = lua_pcall( L, 0, LUA_MULTRET, 0 );
 	if( r )
 		printf( ERROR_STRING, lua_tostring( L, -1 ) );
+	*/
+
+	r = luaL_dofile( L, "lua/chords.lua" );
+	r = luaL_dofile( L, "lua/channels.lua" );
+	r = luaL_dofile( L, "lua/drums.lua" );
+
+	r = luaL_dofile( L, argv[1] );
+	if( r ) printf( "ERR\n" );
 
 	printf( "taraf %03ialpha -- Dumitru Industries.\n", TARAF_VERSION );
 
