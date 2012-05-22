@@ -268,28 +268,24 @@ int main( int argc, char* argv[] )
 	{
 		lua_pushstring( L, argv[1] );
 		lua_setfield( L, -2, "style" );
-		lua_pop( L, 2 );
 	}
 
 	if( argc > 2 )
 	{
 		lua_pushstring( L, argv[2] );
 		lua_setfield( L, -2, "note" );
-		lua_pop( L, 2 );
 	}
 
 	if( argc > 3 )
 	{
 		lua_pushinteger( L, atoi( argv[3] ) );
 		lua_setfield( L, -2, "bpm" );
-		lua_pop( L, 2 );
 	}
 
 	if( argc > 4 )
 	{
 		lua_pushinteger( L, atoi( argv[4] ) );
 		lua_setfield( L, -2, "tempo" );
-		lua_pop( L, 2 );
 	}
 
 	lua_setglobal( L, "args" );
@@ -297,9 +293,8 @@ int main( int argc, char* argv[] )
 	r = luaL_loadfile( L, argv[1] );
 	/* quick and dirty debug hack */
 		printf( "ERR %i\n", r );
-		printf( lua_tostring( L, -1 ) );
 		printf( "TYPE %i\n", lua_type( L, -1 ) );
-	lua_pcall( L, 0, 0, 0 );
+	r = lua_pcall( L, 0, LUA_MULTRET, 0 );
 	if( r )
 		printf( ERROR_STRING, lua_tostring( L, -1 ) );
 
