@@ -24,7 +24,7 @@ require( "lua/drums" )
 require( "lua/channels" )
 
 -- TODO dynamic style loading
-require( "styles/34" )
+--require( "styles/34" )
 
 function init()
 	print( "Initializing Taraf..." )

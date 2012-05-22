@@ -20,7 +20,7 @@
 
 #include <fluidsynth.h>
 
-#define TARAF_VERSION 2
+#define TARAF_VERSION 3
 #define ERROR_STRING "O eroare de iubire: %s\n"
 
 fluid_settings_t *t_settings;
@@ -96,6 +96,7 @@ static int fluid_init( lua_State *L )
 	t_client_dest = fluid_sequencer_register_client( t_seq, "taraf",
 		taraf_callback, NULL ); 
 
+	/* TODO make returnvalue functional */
 	if( r )
 		lua_pushstring( L, "ok" );
 
@@ -200,7 +201,7 @@ void *luaT( void *arg )
 	if( r )
 	{
 		printf( ERROR_STRING, lua_tostring( L, -1 ) );
-		return;
+		return NULL;
 	}
 
 	lua_getglobal( L, "init" );
@@ -212,11 +213,32 @@ void *luaT( void *arg )
 	if( r )
 		printf( ERROR_STRING, lua_tostring( L, -1 ) );
 	
-	
+	return NULL;
+}
+
+void print_usage( char* n )
+{
+	printf( "usage: %s [style] [base-note] [bpm] [tempo-factor]\n", n );
+}
+
+void safe_exit( int e )
+{
+	if( t_seq )
+		delete_fluid_sequencer( t_seq );
+	if( t_adriver )
+		delete_fluid_audio_driver( t_adriver );
+	if( t_synth )
+		delete_fluid_synth( t_synth );
+	if( t_settings )
+		delete_fluid_settings( t_settings );
+
+	exit( e );
 }
 
 int main( int argc, char* argv[] )
 {
+	int r;
+
 	L = lua_open();
 	luaL_openlibs( L );
 
@@ -232,6 +254,54 @@ int main( int argc, char* argv[] )
 		{	"loadSFont",		fluid_load_sfont },
 		{	NULL,				NULL } };
 	luaL_register( L, "fluid", fluid );
+
+	if( argc < 2 )
+	{
+		print_usage( argv[0] );
+		safe_exit( 0 );
+	}
+
+	/* arg.style, arg.note, arg.bpm, arg.tempo */
+	lua_newtable( L );
+
+	if( argc > 1 )
+	{
+		lua_pushstring( L, argv[1] );
+		lua_setfield( L, -2, "style" );
+		lua_pop( L, 2 );
+	}
+
+	if( argc > 2 )
+	{
+		lua_pushstring( L, argv[2] );
+		lua_setfield( L, -2, "note" );
+		lua_pop( L, 2 );
+	}
+
+	if( argc > 3 )
+	{
+		lua_pushinteger( L, atoi( argv[3] ) );
+		lua_setfield( L, -2, "bpm" );
+		lua_pop( L, 2 );
+	}
+
+	if( argc > 4 )
+	{
+		lua_pushinteger( L, atoi( argv[4] ) );
+		lua_setfield( L, -2, "tempo" );
+		lua_pop( L, 2 );
+	}
+
+	lua_setglobal( L, "args" );
+
+	r = luaL_loadfile( L, argv[1] );
+	/* quick and dirty debug hack */
+		printf( "ERR %i\n", r );
+		printf( lua_tostring( L, -1 ) );
+		printf( "TYPE %i\n", lua_type( L, -1 ) );
+	lua_pcall( L, 0, 0, 0 );
+	if( r )
+		printf( ERROR_STRING, lua_tostring( L, -1 ) );
 
 	printf( "taraf %03ialpha -- Dumitru Industries.\n", TARAF_VERSION );
 
