@@ -10,11 +10,30 @@
 		the "let ring" lookahead can be calculated for each tick,
 		not necessarily for every note
 
-	TODO resize patterns based on largest pattern!
+	TODO which central note in noteToMidi? E for guitar? A for piano?
+
+	TODO rename style.defaultSpeed -> style.defaultTempo
 ]]--
+
+-- TODO constant?
+defaultDeltaNote = 60
 
 currentOrder = 1
 maxPatternSize = 0
+
+noteToMidi = {
+	e  = 52,
+	f  = 53,
+	fs = 54,
+	g  = 55,
+	gs = 56,
+	a  = 57,
+	as = 58,
+	b  = 59,
+	c  = 60,
+	cs = 61,
+	d  = 62,
+	ds = 63 }
 
 function init()
 	print( "Initializing Taraf..." )
@@ -22,6 +41,24 @@ function init()
 	fluid.loadSFont( "./default.sf2" )
 
 	maxPatternSize = getMaxPatternSize()
+
+	if args.note then
+		deltaNote = noteToMidi[ args.note ]
+	else
+		deltaNote = defaultDeltaNote
+	end
+
+	if args.bpm then
+		realBPM = args.bpm
+	else
+		realBPM = style.defaultBPM
+	end
+
+	if args.tempo then
+		realTempo = args.tempo
+	else
+		realTempo = style.defaultSpeed
+	end
 end
 
 function terminate()
@@ -79,11 +116,10 @@ end
 
 function pattern()
 	-- TODO: style-based default note and sweep duration!
-	local delta_note = 55
 	local sweep_delta = 0
 
-	local tickLength = 60000 / style.defaultBPM
-	local spd = style.defaultSpeed / style.measure
+	local tickLength = 60000 / realBPM
+	local spd = realTempo / style.measure
 
 	if style.order[currentOrder+1] == "repeat" then
 		currentOrder = 1
@@ -127,7 +163,7 @@ function pattern()
 		for i = 1, #chordpattern do
 			if chordpattern[i] ~= "let ring" and chordpattern[i] ~= "pause" then
 				for j = 1, #chordpattern[i][2] do
-					note = delta_note + chordpattern[i][1] + chordpattern[i][2][j]
+					note = deltaNote + chordpattern[i][1] + chordpattern[i][2][j]
 					fluid.noteOn( chordChannel, note, style.chordsVol, ( tickLength / spd ) * i + sweep_delta*j )
 					ringlength = 1
 					while chordpattern[i+ringlength] == "let ring" do
@@ -146,7 +182,7 @@ function pattern()
 	if basspattern then
 		for i = 1, #basspattern do
 			if basspattern[i] ~= "let ring" then
-				note = delta_note + basspattern[i] - 24
+				note = deltaNote + basspattern[i] - 24
 				fluid.noteOn( bassChannel, note, style.bassVol, ( tickLength / spd ) * i )
 				while basspattern[i+ringlength] == "let ring" do
 					ringlength = ringlength + 1
