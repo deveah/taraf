@@ -7,8 +7,11 @@ style.defaultSpeed = 32
 style.defaultBPM = 140
 style.measure = 8
 
+style.chordInstrument = 41
+style.bassInstrument = 35
+
 style.chords = {}
-style.chordsVol = 100
+style.chordsVol = 60
 style.chords[1] = {
 	{  0,	min	},
 	"let ring",
@@ -24,7 +27,7 @@ style.drums[1] = {
 	sd, ch, mt, lt }
 
 style.bass = {}
-style.bassVol = 100
+style.bassVol = 120
 style.bass[1] = {
 	0, 0, 0, 0,
 	-2, -2, 11, 13 }

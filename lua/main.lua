@@ -13,6 +13,10 @@
 	TODO which central note in noteToMidi? E for guitar? A for piano?
 
 	TODO rename style.defaultSpeed -> style.defaultTempo
+
+	TODO change instruments from within style
+
+	TODO random base note, maybe if specified 'rnd' as argument
 ]]--
 
 -- TODO constant?
@@ -20,6 +24,9 @@ defaultDeltaNote = 60
 
 currentOrder = 1
 maxPatternSize = 0
+
+-- show warnings
+warning = false
 
 noteToMidi = {
 	e  = 52,
@@ -34,6 +41,12 @@ noteToMidi = {
 	cs = 61,
 	d  = 62,
 	ds = 63 }
+
+function warn( s )
+	if warning then
+		print( s )
+	end
+end
 
 function init()
 	print( "Initializing Taraf..." )
@@ -59,6 +72,8 @@ function init()
 	else
 		realTempo = style.defaultSpeed
 	end
+
+	print( "Playing " .. style.name .. " by " .. style.author ) 
 end
 
 function terminate()
@@ -140,10 +155,23 @@ function pattern()
 		return nil
 	end
 
-	-- TODO: change instruments from within the style
-	fluid.programChange( chordChannel, 90 )
-	fluid.programChange( bassChannel, 35 )
+	-- set instruments
+	
+	if style.chordInstrument then
+		ci = style.chordInstrument
+	else
+		warn( "Style has no chord instrument specified." )
+		ci = 1 -- default MIDI 'Acoustic Grand Piano'
+	end
+	fluid.programChange( chordChannel, ci )
 
+	if style.bassInstrument then
+		bi = style.bassInstrument
+	else
+		warn( "Style has no bass instrument specified." )
+		bi = 35 -- default MIDI 'Electric Bass (pick)'
+	end
+	fluid.programChange( bassChannel, bi )
 
 	drumpattern = resizePattern( style.drums[style.order[currentOrder][1]], maxPatternSize )
 	if drumpattern then
