@@ -14,8 +14,6 @@
 
 	TODO rename style.defaultSpeed -> style.defaultTempo
 
-	TODO change instruments from within style
-
 	TODO random base note, maybe if specified 'rnd' as argument
 ]]--
 
@@ -50,6 +48,7 @@ end
 
 function init()
 	print( "Initializing Taraf..." )
+	fluid.setDriver( defaultAudioDevice, defaultOutputFile );
 	fluid.init()
 	fluid.loadSFont( "./default.sf2" )
 

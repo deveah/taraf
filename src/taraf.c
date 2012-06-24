@@ -20,8 +20,9 @@
 
 #include <fluidsynth.h>
 
-#define TARAF_VERSION 3
+#define TARAF_VERSION 4
 #define ERROR_STRING "O eroare de iubire: %s\n"
+#define MAX_STRING_LENGTH 32
 
 fluid_settings_t *t_settings;
 fluid_synth_t *t_synth;
@@ -29,6 +30,9 @@ fluid_audio_driver_t *t_adriver;
 fluid_sequencer_t *t_seq;
 short t_synth_dest, t_client_dest;
 unsigned int global_time = 0;
+
+char audiodriver[MAX_STRING_LENGTH];
+char outputfile[MAX_STRING_LENGTH];
 
 lua_State *L;
 pthread_t lua_thread;
@@ -61,6 +65,17 @@ static int fluid_schedule_callback( lua_State *L )
 	return 0;
 }
 
+static int fluid_setdriver( lua_State *L )
+{
+	char	*f = lua_tostring( L, -1 ),
+			*d = lua_tostring( L, -2 );
+
+	strncpy( audiodriver, d, MAX_STRING_LENGTH );
+	strncpy( outputfile, f, MAX_STRING_LENGTH );
+
+	return 0;
+}
+
 static int fluid_init( lua_State *L )
 {
 	int r = 1;
@@ -72,8 +87,8 @@ static int fluid_init( lua_State *L )
 		r = 0;
 	}
 
-	/* TODO: change driver from within lua */
-	fluid_settings_setstr( t_settings, "audio.driver", "alsa" );
+	fluid_settings_setstr( t_settings, "audio.driver", audiodriver );
+	fluid_settings_setstr( t_settings, "audio.file.name", outputfile );
 	
 	t_synth = new_fluid_synth( t_settings );
 	if( t_synth == NULL )
@@ -89,8 +104,12 @@ static int fluid_init( lua_State *L )
 		r = 0;
 	}
 
-	/* TODO NULL check */
 	t_seq = new_fluid_sequencer();
+	if( t_seq == NULL )
+	{
+		lua_pushstring( L, "init sequencer failed" );
+		r = 0;
+	}
 
 	t_synth_dest = fluid_sequencer_register_fluidsynth( t_seq, t_synth );
 	t_client_dest = fluid_sequencer_register_client( t_seq, "taraf",
@@ -206,7 +225,7 @@ void *luaT( void *arg )
 
 	lua_getglobal( L, "init" );
 	r = lua_pcall( L, 0, 0, 0 );
-	/* TODO errcheck */
+	if( r ) printf( ERROR_STRING, lua_tostring( L, -1 ) );
 
 	lua_getglobal( L, "pattern" );
 	r = lua_pcall( L, 0, 0, 0 );
@@ -243,6 +262,7 @@ int main( int argc, char* argv[] )
 	luaL_openlibs( L );
 
 	luaL_Reg fluid[] = {
+		{	"setDriver",		fluid_setdriver },
 		{	"init",				fluid_init },
 		{	"terminate",		fluid_terminate },
 		{	"noteOn",			fluid_noteon },
@@ -290,20 +310,10 @@ int main( int argc, char* argv[] )
 
 	lua_setglobal( L, "args" );
 
-	/*r = luaL_loadfile( L, argv[1] );
-	if( r )
-		printf( "FILE ERROR: %i\n", r );
-	r = lua_pcall( L, 0, LUA_MULTRET, 0 );
-	if( r )
-		printf( ERROR_STRING, lua_tostring( L, -1 ) );
-	*/
-
-	r = luaL_dofile( L, "lua/chords.lua" );
-	r = luaL_dofile( L, "lua/channels.lua" );
-	r = luaL_dofile( L, "lua/drums.lua" );
+	r = luaL_dofile( L, "./lua/global.lua" );
 
 	r = luaL_dofile( L, argv[1] );
-	if( r ) printf( "ERR\n" );
+	if( r ) printf( ERROR_STRING, "File error." );
 
 	printf( "taraf %03ialpha -- Dumitru Industries.\n", TARAF_VERSION );
 
@@ -315,8 +325,8 @@ int main( int argc, char* argv[] )
 	pthread_join( lua_thread, NULL );
 
 	lua_getglobal( L, "terminate" );
-	lua_pcall( L, 0, 0, 0 );
-	/* TODO errcheck */
+	r = lua_pcall( L, 0, 0, 0 );
+	if( r ) printf( ERROR_STRING, lua_tostring( L, -1 ) );
 
 	return 0;
 }
