@@ -20,7 +20,7 @@
 
 #include <fluidsynth.h>
 
-#define TARAF_VERSION 4
+#define TARAF_VERSION 5
 #define ERROR_STRING "O eroare de iubire: %s\n"
 #define MAX_STRING_LENGTH 32
 
@@ -36,6 +36,21 @@ char outputfile[MAX_STRING_LENGTH];
 
 lua_State *L;
 pthread_t lua_thread;
+
+
+void safe_exit( int e )
+{
+	if( t_seq )
+		delete_fluid_sequencer( t_seq );
+	if( t_adriver )
+		delete_fluid_audio_driver( t_adriver );
+	if( t_synth )
+		delete_fluid_synth( t_synth );
+	if( t_settings )
+		delete_fluid_settings( t_settings );
+
+	exit( e );
+}
 
 void schedule_callback( int time )
 {
@@ -210,6 +225,12 @@ static int fluid_get_time( lua_State *L )
 	return 1;
 }
 
+static int fluid_die( lua_State *L )
+{
+	safe_exit( 0 );
+	return 0;
+}
+
 void *luaT( void *arg )
 {
 	int r;
@@ -240,20 +261,6 @@ void print_usage( char* n )
 	printf( "usage: %s [style] [base-note] [bpm] [tempo-factor]\n", n );
 }
 
-void safe_exit( int e )
-{
-	if( t_seq )
-		delete_fluid_sequencer( t_seq );
-	if( t_adriver )
-		delete_fluid_audio_driver( t_adriver );
-	if( t_synth )
-		delete_fluid_synth( t_synth );
-	if( t_settings )
-		delete_fluid_settings( t_settings );
-
-	exit( e );
-}
-
 int main( int argc, char* argv[] )
 {
 	int r;
@@ -272,6 +279,7 @@ int main( int argc, char* argv[] )
 		{	"getTime",			fluid_get_time },
 		{	"scheduleCallback",	fluid_schedule_callback },
 		{	"loadSFont",		fluid_load_sfont },
+		{	"die",				fluid_die },
 		{	NULL,				NULL } };
 	luaL_register( L, "fluid", fluid );
 
@@ -315,7 +323,7 @@ int main( int argc, char* argv[] )
 	r = luaL_dofile( L, argv[1] );
 	if( r ) printf( ERROR_STRING, "File error." );
 
-	printf( "taraf %03ialpha -- Dumitru Industries.\n", TARAF_VERSION );
+	printf( "taraf %03ialpha :: github.com/deveah/taraf\n", TARAF_VERSION );
 
 	pthread_create( &lua_thread, NULL, luaT, NULL );
 

@@ -36,5 +36,5 @@ style.order = {
 --		drums	chords	bass
 	{	1,		nil,	nil		},
 	{	1,		1,		1 		},
-	"repeat"
+	2
 }

@@ -10,21 +10,14 @@
 		the "let ring" lookahead can be calculated for each tick,
 		not necessarily for every note
 
-	TODO which central note in noteToMidi? E for guitar? A for piano?
-
-	TODO rename style.defaultSpeed -> style.defaultTempo
-
-	TODO random base note, maybe if specified 'rnd' as argument
+	TODO document new features: warnings; a number in the order table is a jump command
 ]]--
-
--- TODO constant?
-defaultDeltaNote = 60
 
 currentOrder = 1
 maxPatternSize = 0
 
 -- show warnings
-warning = false
+warning = true
 
 noteToMidi = {
 	e  = 52,
@@ -34,15 +27,15 @@ noteToMidi = {
 	gs = 56,
 	a  = 57,
 	as = 58,
-	b  = 59,
-	c  = 60,
-	cs = 61,
-	d  = 62,
-	ds = 63 }
+	b  = 47,
+	c  = 48,
+	cs = 49,
+	d  = 50,
+	ds = 51 }
 
 function warn( s )
 	if warning then
-		print( s )
+		print( "taraf warning: " .. s )
 	end
 end
 
@@ -50,12 +43,57 @@ function init()
 	print( "Initializing Taraf..." )
 	fluid.setDriver( defaultAudioDevice, defaultOutputFile );
 	fluid.init()
-	fluid.loadSFont( "./default.sf2" )
+	fluid.loadSFont( soundFontPath )
 
 	maxPatternSize = getMaxPatternSize()
 
-	if args.note then
-		deltaNote = noteToMidi[ args.note ]
+
+	if not style.name then
+		warn( "Style has no name specified!" )
+	end
+
+	if not style.author then
+		warn( "Style has no author specified!" )
+	end
+
+	if not style.defaultBPM then
+		warn( "Style has no default BPM! BPM set temporarily to 100." )
+		style.defaultBPM = 100
+	end
+
+	if not style.defaultSpeed then
+		warn( "Style has no default speed! Speed temporarily set to 16." )
+		style.defaultSpeed = 16
+	end
+
+	if not style.measure then
+		warn( "Style has no measure specified! Assuming 4/4." )
+		style.measure = 8
+	end
+
+	if not style.chordSweep then
+		warn( "Style has no chord sweep speed specified! Assuming 0." )
+		style.chordSweep = 0
+	end
+
+	local n = tonumber( args.note )
+	if n == nil then
+		if args.note == "?" then
+			math.randomseed( os.time( ) )
+			deltaNote = math.floor( math.random( 47, 58 ) )
+			io.write( "Random note chosen: " )
+			for k, v in pairs( noteToMidi ) do
+				if v == deltaNote then print( k ) end
+			end
+		else
+			deltaNote = noteToMidi[ string.lower( args.note ) ]
+		end
+		if deltaNote == nil then
+			warn( "Unable to get delta note. Assuming default." )
+			deltaNote = defaultDeltaNote
+		end
+	elseif n > 0 and n < 128 then
+		deltaNote = args.note
 	else
 		deltaNote = defaultDeltaNote
 	end
@@ -72,6 +110,29 @@ function init()
 		realTempo = style.defaultSpeed
 	end
 
+	-- set instruments
+	
+	if style.chordInstrument then
+		ci = style.chordInstrument
+	else
+		warn( "Style has no chord instrument specified." )
+		ci = 1 -- default MIDI 'Acoustic Grand Piano'
+	end
+	fluid.programChange( chordChannel, ci )
+
+	if style.bassInstrument then
+		bi = style.bassInstrument
+	else
+		warn( "Style has no bass instrument specified." )
+		bi = 35 -- default MIDI 'Electric Bass (pick)'
+	end
+	fluid.programChange( bassChannel, bi )
+	
+	if not style.order then
+		warn( "Style has no order table." )
+		fluid.die()
+	end
+	
 	print( "Playing " .. style.name .. " by " .. style.author ) 
 end
 
@@ -98,7 +159,6 @@ function resizePattern( pattern, size )
 end
 
 function getMaxPatternSize()
-	-- find max in chords
 	local mb, mc, md = 0, 0, 0
 	
 	for i = 1, #style.chords do
@@ -129,14 +189,15 @@ function debugPattern( pattern )
 end
 
 function pattern()
-	-- TODO: style-based default note and sweep duration!
-	local sweep_delta = 0
+	local sweep_delta = style.chordSweep
 
 	local tickLength = 60000 / realBPM
 	local spd = realTempo / style.measure
 
 	if style.order[currentOrder+1] == "repeat" then
 		currentOrder = 1
+	elseif type( style.order[currentOrder+1] ) == "number" then
+		currentOrder = style.order[currentOrder+1]
 	else
 		currentOrder = currentOrder + 1
 	end
@@ -153,24 +214,6 @@ function pattern()
 		tickLength = tickLength / 2
 		return nil
 	end
-
-	-- set instruments
-	
-	if style.chordInstrument then
-		ci = style.chordInstrument
-	else
-		warn( "Style has no chord instrument specified." )
-		ci = 1 -- default MIDI 'Acoustic Grand Piano'
-	end
-	fluid.programChange( chordChannel, ci )
-
-	if style.bassInstrument then
-		bi = style.bassInstrument
-	else
-		warn( "Style has no bass instrument specified." )
-		bi = 35 -- default MIDI 'Electric Bass (pick)'
-	end
-	fluid.programChange( bassChannel, bi )
 
 	drumpattern = resizePattern( style.drums[style.order[currentOrder][1]], maxPatternSize )
 	if drumpattern then

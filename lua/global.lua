@@ -1,9 +1,16 @@
 
 -- taraf - global data
 
+-- path to the soundfont used to render the sound
+soundFontPath = "default.sf2"
+
 -- defaults
+-- audio device; can be: jack, alsa, oss, pulseaudio, coreaudio, dsound, portaudio, sndman, dart or file.
 defaultAudioDevice = "alsa"
+-- output filename, in case the audio device is "file".
 defaultOutputFile = "tarafout.wav"
+-- default delta note, in case it is not specified:
+defaultDeltaNote = 60 -- middle C
 
 -- channel numbers
 chordChannel = 1
