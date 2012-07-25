@@ -78,7 +78,7 @@ function init()
 
 	local n = tonumber( args.note )
 	if n == nil then
-		if args.note == "?" then
+		if args.note == "?" or args.note == nil then
 			math.randomseed( os.time( ) )
 			deltaNote = math.floor( math.random( 47, 58 ) )
 			io.write( "Random note chosen: " )

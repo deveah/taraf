@@ -7,8 +7,8 @@ style.defaultSpeed = 32
 style.defaultBPM = 140
 style.measure = 8
 
-style.chordInstrument = 41
-style.bassInstrument = 35
+style.chordInstrument = 20
+style.bassInstrument = 34
 
 style.chords = {}
 style.chordsVol = 60
@@ -30,7 +30,7 @@ style.bass = {}
 style.bassVol = 120
 style.bass[1] = {
 	0, 0, 0, 0,
-	-2, -2, 11, 13 }
+	-2, -2, 1, 1 }
 
 style.order = {
 --		drums	chords	bass
