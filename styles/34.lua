@@ -27,3 +27,7 @@ style.bass[1] = {
 	-2, -2,
 	-7, -7 }
 
+style.order = {
+	{ 1, 1, 1 },
+	"repeat"
+}

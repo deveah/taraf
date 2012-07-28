@@ -194,13 +194,7 @@ function pattern()
 	local tickLength = 60000 / realBPM
 	local spd = realTempo / style.measure
 
-	if style.order[currentOrder+1] == "repeat" then
-		currentOrder = 1
-	elseif type( style.order[currentOrder+1] ) == "number" then
-		currentOrder = style.order[currentOrder+1]
-	else
-		currentOrder = currentOrder + 1
-	end
+
 
 	if not headerPlayed then
 		local t = style.measure / 2
@@ -262,5 +256,13 @@ function pattern()
 		end
 	end
 
+	if style.order[currentOrder+1] == "repeat" then
+		currentOrder = 1
+	elseif type( style.order[currentOrder+1] ) == "number" then
+		currentOrder = style.order[currentOrder+1]
+	else
+		currentOrder = currentOrder + 1
+	end
+	
 	fluid.scheduleCallback( ( maxPatternSize / spd ) * tickLength )
 end	

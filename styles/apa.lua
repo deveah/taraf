@@ -7,8 +7,10 @@ style.measure = 8
 style.defaultSpeed = 16
 style.defaultBPM = 160
 
+style.chordInstrument = 1
+
 style.chords = {}
-style.chordsVol = 80
+style.chordsVol = 100
 style.chords[1] = {
 	{  0, maj },
 	{  0, maj },
@@ -52,5 +54,6 @@ style.drumsVol = 100
 style.drums[1] = { bd, xx, bd, sd, xx, xx, sd, ch }
 
 style.order = {
+	{	1,	1,	1	},
 	{ 	1,	1,	1 	},
 	"repeat" }
