@@ -1,0 +1,85 @@
+
+	Taraf
+	a small backing track generator/
+	un mic generator de backing trackuri
+	--
+
+	Taraf is a small backing track generator based on 'styles', which are a
+sort of musical templates, except they have default behaviour. Taraf is aimed
+at instrumentalists who desire to improvise to dynamic backing tracks, being
+able to change parameters such as the base note, BPM and tempo.
+
+	Backing track-urile sunt fișiere audio, de obicei statice, care dau
+instrumentiștilor o coloană sonoră peste care se poate improviza. Taraf este
+un generator de astfel de backing track-uri, numai că oferă posibilitatea
+schimbării unor parametrii precum nota de bază, bătăile pe minut și tempo-ul.
+	
+	Taraf este scris în C și Lua; partea C oferă funcțiile de bază pentru
+comunicarea cu FluidSynth, iar partea din Lua face toate transformările de la
+'stil' până la date MIDI.
+	
+	Cererile sunt date Tarafului prin linia de comandă, precum mai jos:
+
+	$ ./taraf [stil] [nota-de-bază] [bpm] [factor-tempo]
+
+	Nota de bază este în format 'A'...'G', iar diejii sunt notați cu 's';
+astfel, 'do#' va fi scris ca 'cs', iar 'la' va fi scris ca 'a'.
+	
+	Stilurile sunt fișiere Lua care conțin date precum liniile de acorduri,
+bas și tobe, volumele acestor linii, numele și autorul stilului. Un stil
+conține următoarele intrări:
+
+	style
+		name					numele stilului
+		author					autorul stilului
+		
+		defaultSpeed			factorul de viteză predefinit
+		defaultBPM				bătăile pe minut predefinite
+		measure					măsura stilului, în optimi pe măsură
+		
+		chordInstrument			instrumentul MIDI pentru acorduri
+		bassInstrument			instrumentul MIDI pentru bas
+		
+		chords					tabelul cu pattern-uri pentru acorduri
+			1 ... n
+		chordsVol				volumul canalului pentru acorduri
+
+		drums					tabelul cu pattern-uri pentru tobe
+			1 ... n
+		drumsVol				volumul cananului pentru tobe
+
+		bass					tabelul cu pattern-uri pentru bas
+			1 ... n
+		bassVol					volumul canalului pentru bas
+
+		order					tabelul cu ordinea pattern-urilor în stil
+			1 ... n
+
+	'style.chords', 'style.drums' și 'style.bass' sunt tabelele care conțin
+liniile melodice.
+	'style.chords' are intrările după formatul: '{ delta, tip-acord }';
+	'style.drums' are intrările simple, canalul fiind monofonic;
+		instrumentele de percuție disponibile sunt:
+			bd - toba mare
+			sd - toba mică
+			ch, oh, cr - cinele( închis, deschis, crash )
+			lt, mt, ht - tom-uri( jos, mediu, înalt )
+	'style.bass' este de asemenea monofonic, dar formatul este 'delta'.
+
+	'style.order' este tabelul de ordine pentru pattern-uri; formatul este
+următorul: { tobe, acorduri, bas }. Pentru a nu cânta nimic pe un canal,
+se poate specifica 'nil' în locul oricârei intrări. Pentru a executa un salt
+către intrarea 'n', se va specifica doar numărul intrării; de asemenea, pentru
+a sări la început, se va specifica "repeat" în locul intrării de ordine.
+
+	Pe lângă parametrii care se aleg pentru fiecare sesiune, mai există și
+alți parametrii precum driverul de sunet, canalele active și definirea
+acordurilor. Acești parametri se află în 'lua/global.lua'.
+
+	Taraf folosește FluidSynth pentru a transforma datele MIDI în semnal audio,
+care are nevoie de SoundFonturi - orice SoundFont merge, dar de preferat ar fi
+cele conform Standard MIDI, conținând mai multe instrumente.
+
+	Compilarea necesită FluidSynth, POSIX Threads și Lua.
+
+	Mulțumiri domnului Viorel Nedelici pentru ajutorul teoretic acordat.
