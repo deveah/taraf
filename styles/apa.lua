@@ -54,6 +54,5 @@ style.drumsVol = 100
 style.drums[1] = { bd, xx, bd, sd, xx, xx, sd, ch }
 
 style.order = {
-	{	1,	1,	1	},
 	{ 	1,	1,	1 	},
 	"repeat" }

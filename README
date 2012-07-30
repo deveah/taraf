@@ -3,8 +3,7 @@ Taraf - a small backing track generator
 
 Taraf is a small backing track generator, which uses 'styles' as input. You can
 think of 'styles' as of musical templates, except for the fact that 'styles'
-also have default behaviour. Right now there's nothing much to see, since the
-project is in its early stages of development.
+also have default behaviour.
 
 Taraf is using FluidSynth for rendering the sound, and Lua for data and MIDI
 processing.

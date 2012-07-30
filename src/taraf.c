@@ -261,6 +261,17 @@ void print_usage( char* n )
 	printf( "usage: %s [style] [base-note] [bpm] [tempo-factor]\n", n );
 }
 
+void print_help( void )
+{
+	printf(
+		"Taraf is a backing track generator. Based on styles, it generates\n"
+		"audible data which can be used to improvise on. Optional parameters\n"
+		"include base note, BPM and a tempo factor. Parameters are in the\n"
+		"following order: style base-note bpm tempo-factor. Default styles\n"
+		"can be found in styles/.\n"
+		);
+}
+
 int main( int argc, char* argv[] )
 {
 	int r;
@@ -286,6 +297,12 @@ int main( int argc, char* argv[] )
 	if( argc < 2 )
 	{
 		print_usage( argv[0] );
+		safe_exit( 0 );
+	}
+
+	if( strcmp( argv[1], "help" ) == 0 )
+	{
+		print_help();
 		safe_exit( 0 );
 	}
 

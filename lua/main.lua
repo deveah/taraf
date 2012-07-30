@@ -47,7 +47,6 @@ function init()
 
 	maxPatternSize = getMaxPatternSize()
 
-
 	if not style.name then
 		warn( "Style has no name specified!" )
 	end
@@ -74,6 +73,10 @@ function init()
 	if not style.chordSweep then
 		warn( "Style has no chord sweep speed specified! Assuming 0." )
 		style.chordSweep = 0
+	end
+
+	if args.note == nil then
+		warn( "No base note specified. Assuming random." )
 	end
 
 	local n = tonumber( args.note )
@@ -132,7 +135,7 @@ function init()
 		warn( "Style has no order table." )
 		fluid.die()
 	end
-	
+
 	print( "Playing " .. style.name .. " by " .. style.author ) 
 end
 
@@ -256,7 +259,7 @@ function pattern()
 		end
 	end
 
-	if style.order[currentOrder+1] == "repeat" then
+	if style.order[currentOrder+1] == "repeat" or currentOrder+1 > #style.order then
 		currentOrder = 1
 	elseif type( style.order[currentOrder+1] ) == "number" then
 		currentOrder = style.order[currentOrder+1]
